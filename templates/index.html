@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="jpn">
+<head>
+    <meta charset="UTF-8">
+    <title>混雑状況管理ソフト(仮)</title>
+    <link rel="stylesheet" type="text/css" href="/static/style.css">
+    <script src="/static/script.js"></script>
+</head>
+<body>
+    <div class="header">
+        <p>混雑状況確認くん</p>
+    </div>
+    <div class="contents">
+        {% for facility in facilities %}
+        <div class="content">
+            <h3>{{facility.name}}</h3>
+            <p>人数:{{facility.current_count}}/{{facility.max_capacity}}</p>
+            {% if facility.current_count > facility.max_capacity*0.75 %}
+                <img src="/static/images/crowded.webp">
+            {% elif facility.current_count > facility.max_capacity*0.5 %}
+                <img src="/static/images/normal.webp">
+            {% else %}
+                <img src="/static/images/vacant.webp">
+            {% endif %}
+        </div>
+        {% endfor %}
+    </div>
+</body>
+</html>

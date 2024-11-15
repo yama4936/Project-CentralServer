@@ -1,0 +1,70 @@
+:root{
+    --header-color:gray;
+    --body-color:lavender;
+    --content:khaki;
+}
+
+body{
+    width: 100vw;
+    height: 100vh;
+    margin: 0;
+    padding: 0;
+    background-color: var(--body-color);
+}
+
+.header{
+    width: 100vw;
+    /*height: 40px;*/
+    font-weight: bold;
+    font-size: 2em;
+    background-color: var(--header-color);
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+}
+
+.header > p{
+    margin: 2%
+}
+
+.contents{
+    width: 100vw;
+    height: auto;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+/*
+各教室の情報を表示する部分
+*/
+.content{
+    width: 25%;
+    height: 20%;
+    flex-basis: 25%;
+    margin: 2%;
+    text-align: center;
+    background-color: var(--content);
+}
+
+.content > h3{
+    margin: 10px;
+}
+.content > img{
+    width: 50%;
+}
+
+
+@media(max-width: 960px){
+    .content{
+        flex-basis: 45%;
+    }
+}
+
+@media(max-width: 450px){
+    .content{
+        flex-basis: 95%;
+    }
+}
