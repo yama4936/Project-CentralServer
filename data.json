@@ -1,0 +1,28 @@
+{
+    "facilities": [
+        {
+            "id": 1,
+            "name": "コンビニ前",
+            "max_capacity": 30,
+            "current_count": 1
+        },
+        {
+            "id": 2,
+            "name": "食堂1F",
+            "max_capacity": 54,
+            "current_count": 33
+        },
+        {
+            "id": 3,
+            "name": "食堂2F",
+            "max_capacity": 52,
+            "current_count": 43
+        },
+        {
+            "id": 4,
+            "name": "学生協",
+            "max_capacity": 44,
+            "current_count": 35
+        }
+    ]
+}
