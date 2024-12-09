@@ -38,19 +38,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# ローカルIPアドレスの範囲（例: 192.168.0.0/16）
-LOCAL_IP_RANGE = ["192.168."]
-
-@app.middleware("http")
-async def block_external_ips(request: Request, call_next):
-    client_ip = request.client.host
-    # ローカルIP範囲からのアクセスのみ許可
-    if not any(client_ip.startswith(range) for range in LOCAL_IP_RANGE):
-        raise HTTPException(status_code=HTTP_403_FORBIDDEN, detail="Access denied")
-    response = await call_next(request)
-    return response
-
-
 # 混雑状況確認ページを表示
 @app.get("/")
 async def get_html(request: Request):
