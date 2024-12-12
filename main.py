@@ -1,6 +1,6 @@
-from fastapi import FastAPI, Request, HTTPException, Header
+from fastapi import FastAPI, Request, Header
 from pydantic import BaseModel, Field
-from fastapi.responses import HTMLResponse
+from fastapi.responses import JSONResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -57,6 +57,20 @@ async def get_html(request: Request):
         data = json.load(file)
 
     return templates.TemplateResponse("index.html", {"request": request, "facilities":data['facilities']})
+
+# JSONファイルの提供
+@app.get("/api/getJsonData")
+async def get_json_data():
+    try:
+        # JSONファイルを読み込む
+        with open(JSON_FILE_PATH, 'r', encoding='utf-8') as f:
+            data = json.load(f)
+        # JSONレスポンスとして返す
+            return JSONResponse(content=data)
+    except FileNotFoundError:
+        return JSONResponse(content={"error": "File not found"}, status_code=404)
+    except json.JSONDecodeError:
+        return JSONResponse(content={"error": "Invalid JSON format"}, status_code=400)
 
 # POSTエンドポイント
 @app.post("/api/sendCrowdLevel")
