@@ -3,24 +3,28 @@
         {
             "id": 1,
             "name": "コンビニ前",
+            "sub_name": "バスターミナル前",
             "max_capacity": 30,
             "current_count": 1
         },
         {
             "id": 2,
             "name": "食堂1F",
+            "sub_name": "2号館1階",
             "max_capacity": 54,
             "current_count": 33
         },
         {
             "id": 3,
             "name": "食堂2F",
+            "sub_name": "2号館2階",
             "max_capacity": 52,
             "current_count": 43
         },
         {
             "id": 4,
             "name": "学生協",
+            "sub_name": "19号館1階",
             "max_capacity": 44,
             "current_count": 35
         }
