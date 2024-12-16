@@ -1,6 +1,6 @@
 from fastapi import FastAPI, Request, Header
 from pydantic import BaseModel, Field
-from fastapi.responses import JSONResponse
+from fastapi.responses import JSONResponse, HTMLResponse
 from fastapi.templating import Jinja2Templates
 from fastapi.staticfiles import StaticFiles
 from fastapi.middleware.cors import CORSMiddleware
@@ -11,22 +11,22 @@ import os
 # 定数
 JSON_FILE_PATH = "data.json"
 TEMPLATE_DIR = "templates"
-STATIC_DIR = "static"
+STATIC_DIR = "build"
 
 # POSTで受け取るデータモデル
 class FacilityInfo(BaseModel):
     id: int = Field(..., description="施設のID")
     name: str = Field(..., min_length=1, max_length=50, description="施設名")
+    sub_name: str = Field(..., min_length=1, max_length=50, description="施設の場所")
     max_capacity: int = Field(..., ge=0, description="最大収容人数")
     current_count: int = Field(..., ge=0, description="現在の人数")
-
-# テンプレートのパスを指定
-templates = Jinja2Templates(directory=TEMPLATE_DIR)
 
 app = FastAPI()
 
 # 静的ファイルの設定
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+app.mount("/static", StaticFiles(directory=os.path.join(STATIC_DIR, "static")), name="static")
+app.mount("/images", StaticFiles(directory=os.path.join(STATIC_DIR, "images")), name="images")
+
 
 # 後のためのCORS回避
 origins = ["*"]
@@ -50,13 +50,14 @@ def save_to_json(file_path, data):
         json.dump(data, file, ensure_ascii=False, indent=4)
 
 # 混雑状況確認ページを表示
-@app.get("/")
-async def get_html(request: Request):
-    #JSONファイルの読み込み
-    with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
-        data = json.load(file)
-
-    return templates.TemplateResponse("index.html", {"request": request, "facilities":data['facilities']})
+@app.get("/", response_class=HTMLResponse)
+async def serve_react_app(request: Request):
+    react_index_path = os.path.join("build", "index.html")
+    if os.path.exists(react_index_path):
+        with open(react_index_path, 'r', encoding='utf-8') as file:
+            content = file.read()
+        return HTMLResponse(content=content)
+    return JSONResponse(content={"error": "index.html not found"}, status_code=404)
 
 # JSONファイルの提供
 @app.get("/api/getJsonData")
