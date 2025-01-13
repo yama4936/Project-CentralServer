@@ -7,11 +7,19 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette.status import HTTP_403_FORBIDDEN
 import json
 import os
+#.envから読み込む設定
+import jwt
+import requests
+from dotenv import load_dotenv 
+
+# .envを読み込む
+load_dotenv()  
 
 # 定数
 JSON_FILE_PATH = "data.json"
 TEMPLATE_DIR = "templates"
 STATIC_DIR = "build"
+SECRET_KEY = os.getenv("SECRET_KEY") # .envから取得
 
 # POSTで受け取るデータモデル
 class FacilityInfo(BaseModel):
@@ -75,11 +83,24 @@ async def get_json_data():
 
 # POSTエンドポイント
 @app.post("/api/sendCrowdLevel")
-async def update(info:FacilityInfo, authorization:str=Header(None)):
+async def update(info: FacilityInfo, authorization: str = Header(None)):
+    # ヘッダーの検証
+    if not authorization or authorization != SECRET_KEY: # トークンの検証 適当な文字列を入れる
+        return JSONResponse(
+            content={"error": "Unauthorized access"},
+            status_code=HTTP_403_FORBIDDEN
+        )
 
-    with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
+    # JSONファイルを読み込む
+    try:
+        with open(JSON_FILE_PATH, 'r', encoding='utf-8') as file:
             data = json.load(file)
+    except FileNotFoundError:
+        return JSONResponse(content={"error": "File not found"}, status_code=404)
+    except json.JSONDecodeError:
+        return JSONResponse(content={"error": "Invalid JSON format"}, status_code=400)
 
+    # 更新データの作成
     new_data = {
         "max_capacity": info.max_capacity,
         "current_count": info.current_count
@@ -93,4 +114,3 @@ async def update(info:FacilityInfo, authorization:str=Header(None)):
     else:
         print("update_json error")
         return {"Result" : "update_json is faild!"}
-
