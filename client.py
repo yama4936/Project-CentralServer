@@ -9,7 +9,7 @@ load_dotenv()
 # 環境変数から設定を取得
 BASE_URL = os.getenv("BASE_URL")  # サーバーのURL
 VERIFY_SSL = False # SSL証明書 os.getenv("VERIFY_SSL") 自己署名の場合なのでFalse
-SECRET_KEY = os.getenv("SECRET_KEY") # .envから取得
+SECRET_KEY = os.getenv("SECRET_KEY_id2") # .envから取得
 
 # 更新するデータ
 max_capacity = 44

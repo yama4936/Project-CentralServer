@@ -19,7 +19,7 @@ load_dotenv()
 JSON_FILE_PATH = "data.json"
 TEMPLATE_DIR = "templates"
 STATIC_DIR = "build"
-SECRET_KEY = os.getenv("SECRET_KEY") # .envから取得
+SECRET_KEYS = {os.getenv("SECRET_KEY_id1"), os.getenv("SECRET_KEY_id2"), os.getenv("SECRET_KEY_id3"),os.getenv("SECRET_KEY_id4") } # .envから取得
 
 # POSTで受け取るデータモデル
 class FacilityInfo(BaseModel):
@@ -85,7 +85,7 @@ async def get_json_data():
 @app.post("/api/sendCrowdLevel")
 async def update(info: FacilityInfo, authorization: str = Header(None)):
     # ヘッダーの検証
-    if not authorization or authorization != SECRET_KEY: # トークンの検証 適当な文字列を入れる
+    if not authorization or authorization not in SECRET_KEYS: # トークンの検証 適当な文字列を入れる
         return JSONResponse(
             content={"error": "Unauthorized access"},
             status_code=HTTP_403_FORBIDDEN
