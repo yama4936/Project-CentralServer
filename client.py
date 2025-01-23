@@ -13,7 +13,7 @@ SECRET_KEY = os.getenv("SECRET_KEY_id2") # .envから取得
 
 # 更新するデータ
 max_capacity = 44
-current_count = 1
+current_count = 3
 data = {
     "id": 4,
     "name": "学生協",

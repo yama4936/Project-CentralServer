@@ -11,6 +11,7 @@ import os
 import jwt
 import requests
 from dotenv import load_dotenv 
+import sqlite3
 
 # .envを読み込む
 load_dotenv()  
@@ -109,8 +110,39 @@ async def update(info: FacilityInfo, authorization: str = Header(None)):
     # id一致で情報更新
     if update_json(data["facilities"], info.id, new_data):
         save_to_json(JSON_FILE_PATH, data)
-        print("update_json is correct!")
-        return {"Result" : "update_json is correct!"}
+
+        try:
+            # データベース接続を管理
+            with sqlite3.connect("data.db") as conn:
+                # カーソルは明示的に管理
+                cursor = conn.cursor()
+                try:
+                    cursor.execute('''
+                        INSERT INTO data (id, max_capacity, current_count)
+                        VALUES (?, ?, ?)
+                    ''', (info.id, info.max_capacity, info.current_count))
+                finally:
+                    # カーソルを閉じる
+                    cursor.close()
+
+            print("update_data is correct!")
+            return {
+                "message": "Data updated successfully",
+            }
+
+        except sqlite3.Error as e:
+            # SQLiteエラー時の処理
+            raise RuntimeError(f"Database error occurred: {e}")
+        
+        print("update_data is correct!")
+        return {
+            "message": "Data updated successfully",
+        }
+
     else:
         print("update_json error")
         return {"Result" : "update_json is faild!"}
+
+    
+    
+        

@@ -16,3 +16,5 @@ starlette==0.38.4
 typing_extensions==4.12.2
 urllib3==2.2.2
 uvicorn==0.30.6
+python-dotenv==1.0.0  # 環境変数の読み込みに必要
+PyJWT==2.8.0         # JWTトークンの使用に必要
