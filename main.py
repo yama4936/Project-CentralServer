@@ -11,6 +11,8 @@ import os
 import jwt
 import requests
 from dotenv import load_dotenv 
+import sqlite3
+import datetime
 
 # .envを読み込む
 load_dotenv()  
@@ -45,6 +47,9 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+def get_current_weekday():
+    return datetime.datetime.now().weekday()  # 0: 月曜日, 6: 日曜日
 
 def update_json(facilities, facility_id, new_data):
     for facility in facilities:
@@ -109,8 +114,80 @@ async def update(info: FacilityInfo, authorization: str = Header(None)):
     # id一致で情報更新
     if update_json(data["facilities"], info.id, new_data):
         save_to_json(JSON_FILE_PATH, data)
-        print("update_json is correct!")
-        return {"Result" : "update_json is correct!"}
+
+        try:
+            # データベース接続を管理
+            with sqlite3.connect("data.db") as conn:
+                # カーソルは明示的に管理
+                cursor = conn.cursor()
+                try:
+                    cursor.execute('''
+                        INSERT INTO data (id, max_value, current_value)
+                        VALUES (?, ?, ?)
+                    ''', (info.id, info.max_capacity, info.current_count))
+                finally:
+                    # カーソルを閉じる
+                    cursor.close()
+
+            print("update_data is correct!")
+            return {
+                "message": "Data updated successfully",
+            }
+
+        except sqlite3.Error as e:
+            # SQLiteエラー時の処理
+            raise RuntimeError(f"Database error occurred: {e}")
+        
     else:
         print("update_json error")
         return {"Result" : "update_json is faild!"}
+
+@app.get("/api/weekly_average")
+async def get_weekly_average():
+    current_weekday = get_current_weekday()
+
+    # 日付の範囲を設定
+    today = datetime.datetime.now()
+    one_week_ago = today - datetime.timedelta(days=7)
+    one_week_ago_start = one_week_ago.replace(hour=0, minute=0, second=0, microsecond=0)
+    one_week_ago_end = one_week_ago.replace(hour=23, minute=59, second=59, microsecond=999999)
+
+    try:
+        with sqlite3.connect("data.db") as conn:
+            cursor = conn.cursor()
+
+            # 先週の同じ曜日に該当するデータを30分ごとに集計
+            query = f"""
+            SELECT 
+                id,
+                strftime('%Y-%m-%d %H:%M', created_at, 'localtime') AS time_block,
+                AVG(current_value) AS avg_current
+            FROM data
+            WHERE strftime('%w', created_at) = '{current_weekday}' AND created_at BETWEEN '{one_week_ago_start}' AND '{one_week_ago_end}'
+            GROUP BY id, time_block
+            ORDER BY id, time_block;
+            """
+            cursor.execute(query)
+            results = cursor.fetchall()
+
+            # idごとに施設のデータを整理
+            facility_data = {}
+            for row in results:
+                facility_id = row[0]
+                if facility_id not in facility_data:
+                    facility_data[facility_id] = {
+                        "id": facility_id,
+                        "time_blocks": []
+                    }
+                facility_data[facility_id]["time_blocks"].append({
+                    "time_block": row[1],
+                    "average_current_value": row[2]
+                })
+
+            # JSON形式のリストを整形
+            response_data = list(facility_data.values())
+
+            return JSONResponse(content=response_data)
+
+    except sqlite3.Error as e:
+        return {"status": "error", "message": str(e)}
